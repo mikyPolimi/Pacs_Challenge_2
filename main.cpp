@@ -11,8 +11,18 @@ int main(){
 
     using T = double;
 
-    matrix<T,StorageOrder::row_wise> m;
-    m(1,2) = 3;
+
+ 
+
+
+    Matrix<T,StorageOrder::row_wise> m (2,2);
+    m(1,1) = 3;
+
+    std::cout << "Stream operator:" << std::endl;
+    std::cout << m;
+    std::cout << std::endl;
+    
+    m.compress();
 
 
 
