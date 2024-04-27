@@ -18,22 +18,50 @@ namespace algebra{
         column_wise
     };
 
+    
+/*
+    // struct were i store all the data for the dynamic version of the matrix
+    template<StorageOrder S >
+    class Position{
+        public:
+        std::array<std::size_t,2> pos;
+        
+        inline bool operator < (const Position& p1, const Position& p2){
+            return p1 < p2;
+        }
+
+// partial specialization of the operator <
+        template<>
+        inline bool Position<StorageOrder::column_wise> operator < (const position& p1, const position& p2){
+            return std::tie(p1.pos[1],p1.pos[0]) < std::tie(p2.pos[1],p2.pos[0]);
+        }
+    };
+*/
+
     using position = std::array<std::size_t,2>;
 
-    template<class T>
+struct custom_comparer
+{
+    bool operator()(const position& left, const position& right) const
+    {      
+        return left[1] < right[1] or (left[1] == right[1] and left[0] < right[0]);
+    }
+};
+
+    template<class T, StorageOrder S>
     using dynamic_container = std::map<position,T>;
 
-    template<class T>
-    using vec_type = std::vector<T>;
+        //Dynamic_struct()
 
-    using num_type = long unsigned int;
+template<class T>
+        using vec_type = std::vector<T>;
 
-
-
+        using num_type = long unsigned int;
     // struct were I store all the data for the compressed version of the matrix
 
     template< class T, StorageOrder S >
-    struct Compressed{
+    struct Compressed_struct{
+
         vec_type<T> values;
         vec_type<num_type> row_idx;
         vec_type<num_type> col_idx;
@@ -63,8 +91,8 @@ namespace algebra{
     class Matrix{
 
     private:
-        dynamic_container<T> m_dyn_data;
-        Compressed<T,S> m_compr_data;
+        dynamic_container<T,S> m_dyn_data;
+        Compressed_struct<T,S> m_compr_data;
 
         bool m_is_compr = false;
 
@@ -85,6 +113,12 @@ namespace algebra{
 
         // read the element in position (i,j)
         T& operator ()(std::size_t i, std::size_t j)const;
+
+
+        //template<class T, StorageOrder S>
+        //inline bool operator < (const vec_type& v1, const vec_type& v2)const {
+          //  return v1 < v2;
+        //}
 
         inline bool is_row_wise() const{
             return S == StorageOrder::row_wise;
@@ -112,7 +146,7 @@ namespace algebra{
 // caso row default, traversing by column cambio la def di operatore <
 
 
-}
+};
 
 #include "matrix_impl.hpp"
 
