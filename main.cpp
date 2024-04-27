@@ -15,16 +15,23 @@ int main(){
  
 
 
-    Matrix<T,StorageOrder::row_wise> m (2,2);
-    m(1,1) = 3;
+    Matrix<T,StorageOrder::column_wise> M (4,5);
+    M(0,2) = 3;
+    M(0, 4) = 4;
+    M(1, 2) = 5;
+    M(1, 3) = 7;
+    M(3, 1) = 2;
+    M(3, 2) = 6;
 
     std::cout << "Stream operator:" << std::endl;
-    std::cout << m;
+    std::cout << M;
     std::cout << std::endl;
-    
-    m.compress();
 
+    M.compress();
 
+    std::cout << "Stream operator:" << std::endl;
+    std::cout << M;
+    std::cout << std::endl;
 
     return 0;
 }

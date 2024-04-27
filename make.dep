@@ -1,2 +1,1 @@
-main.o: main.cpp matrix.hpp
-matrix.o: matrix.cpp matrix.hpp
+main.o: main.cpp matrix.hpp matrix_impl.hpp
