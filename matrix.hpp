@@ -18,47 +18,33 @@ namespace algebra{
         column_wise
     };
 
-    
-/*
-    // struct were i store all the data for the dynamic version of the matrix
-    template<StorageOrder S >
-    class Position{
-        public:
-        std::array<std::size_t,2> pos;
-        
-        inline bool operator < (const Position& p1, const Position& p2){
-            return p1 < p2;
-        }
 
-// partial specialization of the operator <
-        template<>
-        inline bool Position<StorageOrder::column_wise> operator < (const position& p1, const position& p2){
-            return std::tie(p1.pos[1],p1.pos[0]) < std::tie(p2.pos[1],p2.pos[0]);
-        }
-    };
-*/
+using position = std::array<std::size_t,2>;
 
-    using position = std::array<std::size_t,2>;
 
+template<StorageOrder S>
 struct custom_comparer
 {
     bool operator()(const position& left, const position& right) const
-    {      
+    {   
+        if constexpr(S == StorageOrder::row_wise)
+            return left < right;   
         return left[1] < right[1] or (left[1] == right[1] and left[0] < right[0]);
     }
 };
 
-    template<class T, StorageOrder S>
-    using dynamic_container = std::map<position,T>;
+template<class T, StorageOrder S>
+using dynamic_container = std::map<position,T,custom_comparer<S>>;
 
-        //Dynamic_struct()
 
-template<class T>
+    template<class T>
         using vec_type = std::vector<T>;
 
-        using num_type = long unsigned int;
-    // struct were I store all the data for the compressed version of the matrix
+    using num_type = long unsigned int;
 
+
+
+    // struct were I store all the data for the compressed version of the matrix
     template< class T, StorageOrder S >
     struct Compressed_struct{
 
@@ -115,11 +101,6 @@ template<class T>
         T& operator ()(std::size_t i, std::size_t j)const;
 
 
-        //template<class T, StorageOrder S>
-        //inline bool operator < (const vec_type& v1, const vec_type& v2)const {
-          //  return v1 < v2;
-        //}
-
         inline bool is_row_wise() const{
             return S == StorageOrder::row_wise;
         }
@@ -142,8 +123,6 @@ template<class T>
 
 // occhio nel caso compressed non devo fare operazioni quindi non mi serve inheritance
 
-
-// caso row default, traversing by column cambio la def di operatore <
 
 
 };

@@ -37,9 +37,10 @@ template <class U, StorageOrder O>
 
             stream << "nrows = " << M.m_nrows << "; ncols = " << M.m_ncol
             << "; nnz = " << M.m_nnz << ";" << std::endl;
-
+            stream << "You are dealing with a ";
+            M.is_row_wise() ? (stream << "row_wise") : (stream << "column_wise");
             if(M.m_is_compr){
-                stream << "You are dealing with a compressed Matrix"<<std::endl;
+                 stream <<" compressed Matrix"<<std::endl;
                 stream << "Values: ";
                 for (const U& val : M.m_compr_data.values) {
                     stream << val << " ";
@@ -61,7 +62,7 @@ template <class U, StorageOrder O>
 
 
             else{
-                stream << "You are dealing with a dynamic Matrix"<<std::endl;
+                stream << " dynamic Matrix"<<std::endl;
                 stream << "mat = [ " << std::endl;
                 for (const auto& p : M.m_dyn_data)
                     {
