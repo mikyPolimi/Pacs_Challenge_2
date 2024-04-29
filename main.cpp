@@ -28,7 +28,7 @@ int main(){
     std::cout << std::endl;
 
     M.compress();
-
+    M.uncompress();
     std::cout << "Stream operator:" << std::endl;
     std::cout << M;
     std::cout << std::endl;

@@ -7,8 +7,8 @@ namespace algebra{
 
 
 // add a new element in position (i,j)
-template<class T, StorageOrder S>
-         T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j){
+    template<class T, StorageOrder S>
+    T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j){
 
             // handle the case where the element is already present
             assert(m_dyn_data.find({i,j}) ==  m_dyn_data.end());
@@ -20,72 +20,72 @@ template<class T, StorageOrder S>
             return m_dyn_data[{i,j}];
         }
 
-// read the element in position (i,j)
-template<class T, StorageOrder S>
+    // read the element in position (i,j)
+    template<class T, StorageOrder S>
     T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j)const {
-    if(m_dyn_data.find({i,j}) ==  m_dyn_data.end())
-        return 0;
-    return m_dyn_data.at({i,j});
+        if(m_dyn_data.find({i,j}) ==  m_dyn_data.end())
+            return 0;
+        return m_dyn_data.at({i,j});
 }
 
 
 
 
 template <class U, StorageOrder O>
-        std::ostream &
-        operator<<(std::ostream &stream, Matrix<U,O> &M){
+std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
-            stream << "nrows = " << M.m_nrows << "; ncols = " << M.m_ncol
-            << "; nnz = " << M.m_nnz << ";" << std::endl;
-            stream << "You are dealing with a ";
-            M.is_row_wise() ? (stream << "row_wise") : (stream << "column_wise");
-            if(M.m_is_compr){
-                 stream <<" compressed Matrix"<<std::endl;
-                stream << "Values: ";
-                for (const U& val : M.m_compr_data.values) {
-                    stream << val << " ";
-                }
-                stream << std::endl;
-
-                stream << "Row Indices: ";
-                for (const num_type& idx : M.m_compr_data.row_idx) {
-                    stream << idx << " ";
-                }
-                stream << std::endl;
-
-                stream << "Column Indices: ";
-                for (const num_type& idx : M.m_compr_data.col_idx) {
-                    stream << idx << " ";
-                }
-                stream << std::endl;
-            }
-
-
-            else{
-                stream << " dynamic Matrix"<<std::endl;
-                stream << "mat = [ " << std::endl;
-                for (const auto& p : M.m_dyn_data)
-                    {
-                        stream << p.first[0] << ", " << p.first[1] << ", ";
-                        stream << std::setprecision(16) << p.second << ";" << std::endl;
-                    }
-                stream << "];" << std::endl;
-            }
-
-            return stream;
-            
+    stream << "nrows = " << M.m_nrows << "; ncols = " << M.m_ncol
+    << "; nnz = " << M.m_nnz << ";" << std::endl;
+    stream << "You are dealing with a ";
+    M.is_row_wise() ? (stream << "row_wise") : (stream << "column_wise");
+    if(M.m_is_compr){
+            stream <<" compressed Matrix"<<std::endl;
+        stream << "Values: ";
+        for (const U& val : M.m_compr_data.values) {
+            stream << val << " ";
         }
+        stream << std::endl;
+
+        stream << "Row Indices: ";
+        for (const num_type& idx : M.m_compr_data.row_idx) {
+            stream << idx << " ";
+        }
+        stream << std::endl;
+
+        stream << "Column Indices: ";
+        for (const num_type& idx : M.m_compr_data.col_idx) {
+            stream << idx << " ";
+        }
+        stream << std::endl;
+    }
+
+
+    else{
+        stream << " dynamic Matrix"<<std::endl;
+        stream << "mat = [ " << std::endl;
+        for (const auto& p : M.m_dyn_data)
+            {
+                stream << p.first[0] << ", " << p.first[1] << ", ";
+                stream << std::setprecision(16) << p.second << ";" << std::endl;
+            }
+        stream << "];" << std::endl;
+    }
+
+    return stream;
+    
+    }
 
 
 
 // method to compress the matrix
-
 template<class T, StorageOrder S>
 void Matrix<T,S>::compress(){
 
     // if matrix already compressed exit
-    if(m_is_compr)
+    if(is_compressed()){
+        std::cerr << "matrix already compressed" << std::endl;
         return ;
+    }
 
     m_compr_data.resize(m_nrows,m_ncol,m_nnz);
     num_type iter = 0; // iterate all non zero elements (from 0 to m_nnz)
@@ -126,10 +126,19 @@ void Matrix<T,S>::compress(){
 
 
 
+// method to uncompress the matrix storage
+template<class T, StorageOrder S>
+void Matrix<T,S>::uncompress(){
+
+// implementation
+
+    m_compr_data.clear();
+    m_is_compr = false;
+}
 
 
 
-    };
+};
 
 
 

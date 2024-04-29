@@ -52,6 +52,7 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         vec_type<num_type> row_idx;
         vec_type<num_type> col_idx;
 
+        //method to resize the containers
         inline void resize(num_type nrow, num_type ncol, num_type nnz){
             values.resize(nnz);
 
@@ -64,8 +65,14 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
                 row_idx.resize(nnz);
             }
         }
-    };
 
+        //method to clear containers
+        inline void clear(){
+            values.clear();
+            row_idx.clear();
+            col_idx.clear();
+        }
+    };
 
 
 
@@ -90,9 +97,13 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
 
 
     public:
-        Matrix() = default;
+        //Matrix() = default;
+
+        //constructor
         Matrix(num_type row, num_type col) : 
         m_nrows(row), m_ncol(col) {};
+
+        // call operators:
 
         // add a new element in position (i,j)
         T& operator ()(std::size_t i, std::size_t j);
@@ -101,20 +112,28 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         T& operator ()(std::size_t i, std::size_t j)const;
 
 
+        // useful bool method
+
         inline bool is_row_wise() const{
             return S == StorageOrder::row_wise;
         }
 
+        inline bool is_compressed() const{
+            return m_is_compr;
+        }
 
+
+        // print operator
 
         template <class U, StorageOrder O>
         friend std::ostream &
         operator<<(std::ostream &stream, Matrix<U,O> &M);
            
 
+        // change dynamic/compress storage
         void compress();
-
-
+        void uncompress();
+;
 
     };
 
