@@ -40,7 +40,7 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
     template<class T>
         using vec_type = std::vector<T>;
 
-    using num_type = long unsigned int;
+    using idx_type = long unsigned int;
 
 
 
@@ -49,11 +49,11 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
     struct Compressed_struct{
 
         vec_type<T> values;
-        vec_type<num_type> row_idx;
-        vec_type<num_type> col_idx;
+        vec_type<idx_type> row_idx;
+        vec_type<idx_type> col_idx;
 
         //method to resize the containers
-        inline void resize(num_type nrow, num_type ncol, num_type nnz){
+        inline void resize(idx_type nrow, idx_type ncol, idx_type nnz){
             values.resize(nnz);
 
             if(S == StorageOrder::row_wise){
@@ -89,9 +89,9 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
 
         bool m_is_compr = false;
 
-        num_type m_nnz = 0;
-        num_type m_nrows = 0;
-        num_type m_ncol = 0;
+        idx_type m_nnz = 0;
+        idx_type m_nrows = 0;
+        idx_type m_ncol = 0;
 
 
 
@@ -100,7 +100,7 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         //Matrix() = default;
 
         //constructor
-        Matrix(num_type row, num_type col) : 
+        Matrix(idx_type row, idx_type col) : 
         m_nrows(row), m_ncol(col) {};
 
         // call operators:
@@ -122,6 +122,9 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
             return m_is_compr;
         }
 
+        inline bool is_in_range(std::size_t i, std::size_t j)const{
+            return i >= 0 and i < m_nrows and j>= 0 and j < m_ncol;
+        }
 
         // print operator
 
@@ -133,7 +136,7 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         // change dynamic/compress storage
         void compress();
         void uncompress();
-;
+
 
     };
 

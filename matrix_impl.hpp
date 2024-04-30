@@ -10,9 +10,12 @@ namespace algebra{
     template<class T, StorageOrder S>
     T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j){
 
-            // handle the case where the element is already present
-            assert(m_dyn_data.find({i,j}) ==  m_dyn_data.end());
+            // checking the index
+            assert(is_in_range(i,j));
 
+            // handle the case where the element is already present
+            if (m_dyn_data.find({i,j}) !=  m_dyn_data.end())
+                std::cout << "element already present, overwrite"<<std::endl;
             //update data:
             ++m_nnz;
 
@@ -47,13 +50,13 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
         stream << std::endl;
 
         stream << "Row Indices: ";
-        for (const num_type& idx : M.m_compr_data.row_idx) {
+        for (const idx_type& idx : M.m_compr_data.row_idx) {
             stream << idx << " ";
         }
         stream << std::endl;
 
         stream << "Column Indices: ";
-        for (const num_type& idx : M.m_compr_data.col_idx) {
+        for (const idx_type& idx : M.m_compr_data.col_idx) {
             stream << idx << " ";
         }
         stream << std::endl;
@@ -88,18 +91,18 @@ void Matrix<T,S>::compress(){
     }
 
     m_compr_data.resize(m_nrows,m_ncol,m_nnz);
-    num_type iter = 0; // iterate all non zero elements (from 0 to m_nnz)
-    num_type idx = 0; // index of the row/col (from 0 to m_nrows/n_cols)
+    idx_type iter = 0; // iterate all non zero elements (from 0 to m_nnz)
+    idx_type idx = 0; // index of the row/col (from 0 to m_nrows/n_cols)
     for(const auto& p : m_dyn_data){
 
         m_compr_data.values[iter] = p.second;
-        num_type i = p.first[0];
-        num_type j = p.first[1];
+        idx_type i = p.first[0];
+        idx_type j = p.first[1];
         // in row_wise case:
         if constexpr(S == StorageOrder::row_wise){
             m_compr_data.col_idx[iter] = j;
             if( i >= idx ) // when i reaches idx value it means we have reached a new row
-                for ( num_type k = idx ; k <= i ; ++k){// i have to deal with the case one row is made of all zero elements
+                for ( idx_type k = idx ; k <= i ; ++k){// i have to deal with the case one row is made of all zero elements
                     m_compr_data.row_idx[k] = iter;
                     ++idx;
                 }
@@ -111,7 +114,7 @@ void Matrix<T,S>::compress(){
             
             m_compr_data.row_idx[iter] = i;
             if( j >= idx ) // when i reaches idx value it means we have reached a new row
-                for ( num_type k = idx ; k <= j ; ++k){// i have to deal with the case one row is made of all zero elements
+                for ( idx_type k = idx ; k <= j ; ++k){// i have to deal with the case one row is made of all zero elements
                     m_compr_data.col_idx[k] = iter;
                     ++idx;
                 }
@@ -125,15 +128,41 @@ void Matrix<T,S>::compress(){
 }
 
 
-
 // method to uncompress the matrix storage
 template<class T, StorageOrder S>
 void Matrix<T,S>::uncompress(){
 
-// implementation
+    // clear the dynamic container
+    m_dyn_data.clear();
 
-    m_compr_data.clear();
+    size_t iter = 0;
+    
+    // row_wise case
+    if(is_row_wise()){
+
+        for (idx_type r = 0 ; r < m_compr_data.row_idx.size()-1; ++r)
+            for(idx_type i = m_compr_data.row_idx[r]; i < m_compr_data.row_idx[r+1] ; ++i){
+                m_dyn_data[{r,m_compr_data.col_idx[iter]}] = m_compr_data.values[iter];
+                ++iter;
+            }
+
+    }
+
+    
+    
+    // column_wise case
+    else{
+        for (idx_type c = 0 ; c < m_compr_data.col_idx.size()-1; ++c )
+            for(idx_type j = m_compr_data.col_idx[c]; j < m_compr_data.col_idx[c+1] ; ++j ){
+                m_dyn_data[{m_compr_data.row_idx[iter],c}] = m_compr_data.values[iter];
+                ++iter;
+            }
+    }
+
+
+
     m_is_compr = false;
+    m_compr_data.clear();
 }
 
 
