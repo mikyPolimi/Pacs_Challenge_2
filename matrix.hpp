@@ -126,6 +126,26 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
             return i >= 0 and i < m_nrows and j>= 0 and j < m_ncol;
         }
 
+        inline bool elem_already_there(std::size_t i, std::size_t j)const{
+            assert(is_in_range(i,j));
+            if(is_compressed){ // compressed case
+                if(is_row_wise){
+                    if (j < m_compr_data.col_idx.size());
+
+
+                    // to complete !!!
+
+                    
+                }
+                else{ // column wise
+
+                }
+            }
+            else // dynamic case
+                if(m_dyn_data.find({i,j}) !=  m_dyn_data.end())
+                    return true;
+            return false;
+        }
         // print operator
 
         template <class U, StorageOrder O>

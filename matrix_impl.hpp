@@ -10,9 +10,18 @@ namespace algebra{
     template<class T, StorageOrder S>
     T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j){
 
-            // checking the index
+        // dynamic
+        if( is_compressed ){
             assert(is_in_range(i,j));
+            assert()
+        }
 
+
+
+        else{
+            // checking the index
+            
+        }
             // handle the case where the element is already present
             if (m_dyn_data.find({i,j}) !=  m_dyn_data.end())
                 std::cout << "element already present, overwrite"<<std::endl;
@@ -26,6 +35,8 @@ namespace algebra{
     // read the element in position (i,j)
     template<class T, StorageOrder S>
     T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j)const {
+        assert(is_in_range(i,j));
+        
         if(m_dyn_data.find({i,j}) ==  m_dyn_data.end())
             return 0;
         return m_dyn_data.at({i,j});
