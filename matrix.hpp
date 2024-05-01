@@ -38,7 +38,7 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
 
 
     template<class T>
-        using vec_type = std::vector<T>;
+    using vec_type = std::vector<T>;
 
     using idx_type = long unsigned int;
 
@@ -49,28 +49,20 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
     struct Compressed_struct{
 
         vec_type<T> values;
-        vec_type<idx_type> row_idx;
-        vec_type<idx_type> col_idx;
-
-        //method to resize the containers
-        inline void resize(idx_type nrow, idx_type ncol, idx_type nnz){
-            values.resize(nnz);
-
-            if(S == StorageOrder::row_wise){
-                col_idx.resize(nnz);
-                row_idx.resize(nrow+1,ncol); // initialize everything to m_ncol in case there are empty rows. Moreover the last element must be m_ncol
-            }
-            else{
-                col_idx.resize(ncol+1);
-                row_idx.resize(nnz);
-            }
-        }
+        vec_type<idx_type> inner_idx; //in row_wise inner_idx = row_idx
+        vec_type<idx_type> outer_idx; //in row_wise outer_idx = col_idx
 
         //method to clear containers
         inline void clear(){
             values.clear();
-            row_idx.clear();
-            col_idx.clear();
+            inner_idx.clear();
+            outer_idx.clear();
+        }
+
+        // switch i and j in colummn_wise order
+        inline void adjust_idx(idx_type& in, idx_type& out){
+            if(S==StorageOrder::column_wise)
+                std::swap(in,out);
         }
     };
 
@@ -94,10 +86,22 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         idx_type m_ncol = 0;
 
 
+        // useful boolean method
+        inline bool is_row_wise() const{
+            return S == StorageOrder::row_wise;
+        }
+
+        inline bool is_compressed() const{
+            return m_is_compr;
+        }
+
+        inline bool is_in_range(std::size_t i, std::size_t j)const{
+            return i >= 0 and i < m_nrows and j>= 0 and j < m_ncol;
+        }
 
 
     public:
-        //Matrix() = default;
+        
 
         //constructor
         Matrix(idx_type row, idx_type col) : 
@@ -112,40 +116,7 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         T& operator ()(std::size_t i, std::size_t j)const;
 
 
-        // useful bool method
-
-        inline bool is_row_wise() const{
-            return S == StorageOrder::row_wise;
-        }
-
-        inline bool is_compressed() const{
-            return m_is_compr;
-        }
-
-        inline bool is_in_range(std::size_t i, std::size_t j)const{
-            return i >= 0 and i < m_nrows and j>= 0 and j < m_ncol;
-        }
-
-        inline bool elem_already_there(std::size_t i, std::size_t j)const{
-            assert(is_in_range(i,j));
-            if(is_compressed){ // compressed case
-                if(is_row_wise){
-                    if (j < m_compr_data.col_idx.size());
-
-
-                    // to complete !!!
-
-                    
-                }
-                else{ // column wise
-
-                }
-            }
-            else // dynamic case
-                if(m_dyn_data.find({i,j}) !=  m_dyn_data.end())
-                    return true;
-            return false;
-        }
+        
         // print operator
 
         template <class U, StorageOrder O>
