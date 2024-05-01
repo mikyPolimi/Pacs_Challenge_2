@@ -23,6 +23,7 @@ int main(){
     M(3, 1) = 2;
     M(3, 2) = 6;
     M(3, 2) = 8;
+    M.resize(2,2);
     std::cout << "Stream operator:" << std::endl;
     std::cout << M;
     std::cout << std::endl;
@@ -31,7 +32,7 @@ int main(){
     
     std::cout << M << std::endl;
     M(3,2) = 5;
-    M(5,5) = 10;
+    
     std::cout<<M(3,2)<<std::endl;
     M.uncompress();
     std::cout << "Stream operator:" << std::endl;

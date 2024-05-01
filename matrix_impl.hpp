@@ -5,6 +5,26 @@
 
 namespace algebra{    
 
+    template<class T, StorageOrder S>
+    void Matrix<T,S>::resize(idx_type row,idx_type col){
+            if(!is_compressed()){
+
+                if(row < m_nrows or col < m_ncol){
+                    auto it = m_dyn_data.begin();
+                    while( it != m_dyn_data.end() ) {
+                        if(it->first[0]>=row or it->first[1]>=col)
+                            m_dyn_data.erase(it);
+                        else
+                            ++it;
+                    }
+                }
+                m_nrows = row;
+                m_ncol = col;
+            }
+            else
+                std::cerr << "It is only possible to resize dynamic-stored matrix"<<std::endl;
+        }
+
 
 // add a new element in position (i,j)
     template<class T, StorageOrder S>
@@ -66,55 +86,6 @@ namespace algebra{
 
         return 0;
     }
-
-
-
-
-template <class U, StorageOrder O>
-std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
-
-    stream << "nrows = " << M.m_nrows << "; ncols = " << M.m_ncol
-    << "; nnz = " << M.m_nnz << ";" << std::endl;
-    stream << "You are dealing with a ";
-    M.is_row_wise() ? (stream << "row_wise") : (stream << "column_wise");
-    if(M.m_is_compr){
-            stream <<" compressed Matrix"<<std::endl;
-        stream << "Values: ";
-        for (const U& val : M.m_compr_data.values) {
-            stream << val << " ";
-        }
-        stream << std::endl;
-
-        stream << "Inner Indices: ";
-        for (const idx_type& idx : M.m_compr_data.inner_idx) {
-            stream << idx << " ";
-        }
-        stream << std::endl;
-
-        stream << "Outer Indices: ";
-        for (const idx_type& idx : M.m_compr_data.outer_idx) {
-            stream << idx << " ";
-        }
-        stream << std::endl;
-    }
-
-
-    else{
-        stream << " dynamic Matrix"<<std::endl;
-        stream << "mat = [ " << std::endl;
-        for (const auto& p : M.m_dyn_data)
-            {
-                stream << p.first[0] << ", " << p.first[1] << ", ";
-                stream << std::setprecision(16) << p.second << ";" << std::endl;
-            }
-        stream << "];" << std::endl;
-    }
-
-    return stream;
-    
-    }
-
-
 
 // method to compress the matrix
 template<class T, StorageOrder S>
@@ -186,6 +157,75 @@ void Matrix<T,S>::uncompress(){
 }
 
 
+template <class U, StorageOrder O>
+std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
+
+    stream << "nrows = " << M.m_nrows << "; ncols = " << M.m_ncol
+    << "; nnz = " << M.m_nnz << ";" << std::endl;
+    stream << "You are dealing with a ";
+    M.is_row_wise() ? (stream << "row_wise") : (stream << "column_wise");
+    if(M.m_is_compr){
+            stream <<" compressed Matrix"<<std::endl;
+        stream << "Values: ";
+        for (const U& val : M.m_compr_data.values) {
+            stream << val << " ";
+        }
+        stream << std::endl;
+
+        stream << "Inner Indices: ";
+        for (const idx_type& idx : M.m_compr_data.inner_idx) {
+            stream << idx << " ";
+        }
+        stream << std::endl;
+
+        stream << "Outer Indices: ";
+        for (const idx_type& idx : M.m_compr_data.outer_idx) {
+            stream << idx << " ";
+        }
+        stream << std::endl;
+    }
+
+
+    else{
+        stream << " dynamic Matrix"<<std::endl;
+        stream << "mat = [ " << std::endl;
+        for (const auto& p : M.m_dyn_data)
+            {
+                stream << p.first[0] << ", " << p.first[1] << ", ";
+                stream << std::setprecision(16) << p.second << ";" << std::endl;
+            }
+        stream << "];" << std::endl;
+    }
+
+    return stream;
+    
+    }
+
+
+
+
+
+// performing Av = b
+        template <class U, StorageOrder O>
+        std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v){
+
+            //check compatible sizes
+            if(M.m_ncol == v.size()){
+                std::vector<U> b(M.m_nrows,0);
+
+                if(M.is_compressed()){
+
+                }
+                else{ // dynamic storage
+
+                }
+            }
+            
+            // wrong size
+            std::cerr << "Unable to perform the operation, wrong size"<<std::endl;
+            static std::vector<U> ret;
+            return ret;
+        }
 
 };
 

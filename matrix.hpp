@@ -18,27 +18,21 @@ namespace algebra{
         column_wise
     };
 
+    using position = std::array<std::size_t,2>;
 
-using position = std::array<std::size_t,2>;
+    template<StorageOrder S>
+    struct custom_comparer
+    {
+        bool operator()(const position& left, const position& right) const
+        {   
+            if constexpr(S == StorageOrder::row_wise)
+                return left < right;   
+            return left[1] < right[1] or (left[1] == right[1] and left[0] < right[0]);
+        }
+    };
 
-
-template<StorageOrder S>
-struct custom_comparer
-{
-    bool operator()(const position& left, const position& right) const
-    {   
-        if constexpr(S == StorageOrder::row_wise)
-            return left < right;   
-        return left[1] < right[1] or (left[1] == right[1] and left[0] < right[0]);
-    }
-};
-
-template<class T, StorageOrder S>
-using dynamic_container = std::map<position,T,custom_comparer<S>>;
-
-
-    template<class T>
-    using vec_type = std::vector<T>;
+    template<class T, StorageOrder S>
+    using dynamic_container = std::map<position,T,custom_comparer<S>>;
 
     using idx_type = long unsigned int;
 
@@ -48,9 +42,9 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
     template< class T, StorageOrder S >
     struct Compressed_struct{
 
-        vec_type<T> values;
-        vec_type<idx_type> inner_idx; //in row_wise inner_idx = row_idx
-        vec_type<idx_type> outer_idx; //in row_wise outer_idx = col_idx
+        std::vector<T> values;
+        std::vector<idx_type> inner_idx; //in row_wise inner_idx = row_idx
+        std::vector<idx_type> outer_idx; //in row_wise outer_idx = col_idx
 
         //method to clear containers
         inline void clear(){
@@ -107,6 +101,8 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         Matrix(idx_type row, idx_type col) : 
         m_nrows(row), m_ncol(col) {};
 
+        // resize method
+        void resize(idx_type row,idx_type col);
         // call operators:
 
         // add a new element in position (i,j)
@@ -115,30 +111,32 @@ using dynamic_container = std::map<position,T,custom_comparer<S>>;
         // read the element in position (i,j)
         T& operator ()(std::size_t i, std::size_t j)const;
 
-
-        
-        // print operator
-
-        template <class U, StorageOrder O>
-        friend std::ostream &
-        operator<<(std::ostream &stream, Matrix<U,O> &M);
-           
-
         // change dynamic/compress storage
         void compress();
         void uncompress();
+        
+        // print operator
+        template <class U, StorageOrder O>
+        friend std::ostream &
+        operator<<(std::ostream &stream, Matrix<U,O> &M);
+/*
+        // check compatible size
+        template <class U, StorageOrder O>
+        friend std::vector<U> check_compatible_sizes (const Matrix<U,O> &M,const std::vector<U>& v){
 
+        };
+        */
+
+        // performing Av = b
+        template <class U, StorageOrder O>
+        friend std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v);
+    
 
     };
 
 
+}
 
-
-// occhio nel caso compressed non devo fare operazioni quindi non mi serve inheritance
-
-
-
-};
 
 #include "matrix_impl.hpp"
 
