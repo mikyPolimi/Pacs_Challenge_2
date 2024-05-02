@@ -272,15 +272,16 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
             static std::vector<U> ret;
             return ret;
         }
-
-        // Extend the matrix vector operator to accept also as vector a Matrix with just one column.
+/*
+        // Extend the matrix vector operator to accept also as vector a Matrix with just one column
         template <class U, StorageOrder O>
         std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v){
             assert ( v.m_ncol==1 and v.m_nrows == M.m_ncol);
                 // copy the matrix inside a vector 
-            
 
+//! TODO
         }
+        */
 
 };
 

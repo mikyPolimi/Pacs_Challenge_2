@@ -45,8 +45,8 @@ void test_mat_vec_prod(){
 };
 int main(int argc, char **argv){
 
-    test_mat_vec_prod();
-  /*  using namespace algebra;
+   // test_mat_vec_prod();
+    using namespace algebra;
     using namespace Timings;
 
     //using T = std::complex<double>;

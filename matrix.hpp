@@ -144,11 +144,11 @@ namespace algebra{
         // performing Av = b
         template <class U, StorageOrder O>
         friend std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v);
-
+/*
         //Extend the matrix vector operator to accept also as vector a Matrix with just one column.
         template <class U, StorageOrder O>
-        friend std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v)
-    
+        friend std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v);
+*/
 
     };
 
