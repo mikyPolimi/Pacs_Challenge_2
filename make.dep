@@ -1,1 +1,1 @@
-main.o: main.cpp matrix.hpp matrix_impl.hpp ReadMatrix.hpp
+main.o: main.cpp matrix.hpp matrix_impl.hpp chrono.hpp

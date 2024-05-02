@@ -82,7 +82,14 @@ namespace algebra{
         idx_type m_nrows = 0;
         idx_type m_ncol = 0;
 
-    void readMatrixMarket(const std::string& filename);
+        void readMatrixMarket(const std::string& filename);
+
+        inline void update_nnz(){
+            if(is_compressed())
+                m_nnz = m_compr_data.values.size();
+            else
+                m_nnz = m_dyn_data.size();
+        };
 
         // useful boolean method
         inline bool is_row_wise() const{
@@ -109,8 +116,14 @@ namespace algebra{
             readMatrixMarket(filename);
         };
 
+        inline idx_type get_nrows(){
+            return m_nrows;
+        }
+        inline idx_type get_ncol(){
+            return m_ncol;
+        }
         // resize method
-        void resize_mat(idx_type row,idx_type col);
+        void resize(idx_type row,idx_type col);
         // call operators:
 
         // add a new element in position (i,j)
@@ -127,17 +140,14 @@ namespace algebra{
         template <class U, StorageOrder O>
         friend std::ostream &
         operator<<(std::ostream &stream, Matrix<U,O> &M);
-/*
-        // check compatible size
-        template <class U, StorageOrder O>
-        friend std::vector<U> check_compatible_sizes (const Matrix<U,O> &M,const std::vector<U>& v){
-
-        };
-        */
 
         // performing Av = b
         template <class U, StorageOrder O>
         friend std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v);
+
+        //Extend the matrix vector operator to accept also as vector a Matrix with just one column.
+        template <class U, StorageOrder O>
+        friend std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v)
     
 
     };

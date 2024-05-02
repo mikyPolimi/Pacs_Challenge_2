@@ -6,6 +6,7 @@
 namespace algebra{    
 
 
+
     template<class T, StorageOrder S>
 void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
        std::ifstream file(filename);
@@ -36,16 +37,15 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
         file >> row >> col >> value;
         (*this)(row - 1,col - 1) = value; // Adjust for 0-based indexing
     }
-    if(nnz==m_nnz)
-        std::cout<<"correct number of non zeros elements stored"<<std::endl;
+    if(nnz!=m_nnz)
+        std::cerr<<"Wrong number of non zeros elements stored! "<<std::endl;
 
     file.close();
 }
 
     template<class T, StorageOrder S>
-    void Matrix<T,S>::resize_mat(idx_type row,idx_type col){ // OCCHIO a nnz !!!!!!!!!!
+    void Matrix<T,S>::resize(idx_type row,idx_type col){
             if(!is_compressed()){
-
                 if(row < m_nrows or col < m_ncol){
                     auto it = m_dyn_data.begin();
                     while( it != m_dyn_data.end() ) {
@@ -54,9 +54,10 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
                         else
                             ++it;
                     }
-                }
+                }                
                 m_nrows = row;
                 m_ncol = col;
+                update_nnz();
             }
             else
                 std::cerr << "It is only possible to resize dynamic-stored matrix"<<std::endl;
@@ -66,8 +67,7 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
 // add a new element in position (i,j)
     template<class T, StorageOrder S>
     T& Matrix<T,S>::operator ()(idx_type i, idx_type j){
-        std::cout<<"non const method"<<std::endl;
-        
+       
         if( is_compressed() ){
             if(is_in_range(i,j)){
             
@@ -104,7 +104,6 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
     // read the element in position (i,j)
     template<class T, StorageOrder S>
     T& Matrix<T,S>::operator ()(idx_type i, idx_type j)const {
-        std::cout<<"const method"<<std::endl;
         assert(is_in_range(i,j));
 
         if(is_compressed()){ // compressed case
@@ -118,7 +117,7 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
             }
 
         else // dynamic storage
-            if( m_dyn_data.find({i,j}) !=  m_dyn_data.end())
+            if( m_dyn_data.find({i,j}) !=  m_dyn_data.cend())
                 return m_dyn_data.at({i,j});
 
         return 0;
@@ -137,7 +136,8 @@ void Matrix<T,S>::compress(){
     // resize the compressed container
     idx_type inner_len;
     S==StorageOrder::row_wise? inner_len=m_nrows+1 : inner_len=m_ncol+1;
-    m_compr_data.values.resize(m_nnz);
+    update_nnz(); 
+    m_compr_data.values.resize(m_nnz); // it is more efficient than doing every time a push back of a vector
     m_compr_data.outer_idx.resize(m_nnz);
     m_compr_data.inner_idx.resize(inner_len);
 
@@ -187,6 +187,7 @@ void Matrix<T,S>::uncompress(){
 }
 
 
+// stream operator
 template <class U, StorageOrder O>
 std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
@@ -250,15 +251,13 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
                         for (idx_type r = 0 ; r < M.m_compr_data.inner_idx.size()-1; ++r)
                             for(idx_type i = M.m_compr_data.inner_idx[r]; i < M.m_compr_data.inner_idx[r+1] ; ++i, ++iter)
                                 res[r] += M.m_compr_data.values[iter] * v[M.m_compr_data.outer_idx[iter]];
-                                // no v[outer[iter]]
+                                
                                // m_dyn_data[{r,m_compr_data.outer_idx[iter]}] = m_compr_data.values[iter];
-                                //++iter;
-                    
+                                                   
                     else
-                        // for (idx_type j = 0 ; j < M.m_ncol; ++j)
-                            for (idx_type c = 0 ; c < M.m_compr_data.inner_idx.size()-1; ++c)
-                                for(idx_type i = M.m_compr_data.inner_idx[c]; i < M.m_compr_data.inner_idx[c+1] ; ++i, ++iter)
-                                    res[M.m_compr_data.outer_idx[iter]] += M.m_compr_data.values[iter] * v[c];
+                        for (idx_type c = 0 ; c < M.m_compr_data.inner_idx.size()-1; ++c)
+                            for(idx_type i = M.m_compr_data.inner_idx[c]; i < M.m_compr_data.inner_idx[c+1] ; ++i, ++iter)
+                                res[M.m_compr_data.outer_idx[iter]] += M.m_compr_data.values[iter] * v[c];
 
                 }
                 else // dynamic storage
@@ -274,7 +273,18 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
             return ret;
         }
 
+        // Extend the matrix vector operator to accept also as vector a Matrix with just one column.
+        template <class U, StorageOrder O>
+        std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v){
+            assert ( v.m_ncol==1 and v.m_nrows == M.m_ncol);
+                // copy the matrix inside a vector 
+            
+
+        }
+
 };
+
+
 
 
 
