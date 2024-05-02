@@ -1,14 +1,17 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+
 #include <map>
 #include<vector>
 #include <array>
 #include <cassert>
 #include <iostream>
 #include <iomanip>
-
-
+#include<complex>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 namespace algebra{
 
@@ -55,7 +58,7 @@ namespace algebra{
 
         // switch i and j in colummn_wise order
         inline void adjust_idx(idx_type& in, idx_type& out){
-            if(S==StorageOrder::column_wise)
+            if constexpr(S==StorageOrder::column_wise)
                 std::swap(in,out);
         }
     };
@@ -79,6 +82,7 @@ namespace algebra{
         idx_type m_nrows = 0;
         idx_type m_ncol = 0;
 
+    void readMatrixMarket(const std::string& filename);
 
         // useful boolean method
         inline bool is_row_wise() const{
@@ -95,14 +99,18 @@ namespace algebra{
 
 
     public:
-        
+        Matrix() = default;
 
         //constructor
         Matrix(idx_type row, idx_type col) : 
         m_nrows(row), m_ncol(col) {};
 
+        Matrix(const std::string& filename){
+            readMatrixMarket(filename);
+        };
+
         // resize method
-        void resize(idx_type row,idx_type col);
+        void resize_mat(idx_type row,idx_type col);
         // call operators:
 
         // add a new element in position (i,j)
@@ -139,5 +147,6 @@ namespace algebra{
 
 
 #include "matrix_impl.hpp"
+//#include "ReadMatrix.hpp"
 
 #endif

@@ -5,15 +5,52 @@
 
 namespace algebra{    
 
+
     template<class T, StorageOrder S>
-    void Matrix<T,S>::resize(idx_type row,idx_type col){
+void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
+       std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        return;
+    }
+
+    std::string line;
+    getline(file, line); // Read the first line to check for MatrixMarket format
+    if (line.find("%%MatrixMarket matrix coordinate real general") == std::string::npos) {
+        std::cerr << "Error: This file is not in MatrixMarket format." << std::endl;
+        return;
+    }
+
+    // Read matrix size information
+    do {
+        getline(file, line);
+    } while (line[0] == '%'); // Skip comment lines
+    std::stringstream ss(line);
+    idx_type nnz;
+    ss >> m_nrows >> m_ncol >> nnz;
+
+    // Read matrix elements and import as dynamic
+    for (idx_type i = 0; i < nnz; ++i) {
+        idx_type row, col;
+        double value;
+        file >> row >> col >> value;
+        (*this)(row - 1,col - 1) = value; // Adjust for 0-based indexing
+    }
+    if(nnz==m_nnz)
+        std::cout<<"correct number of non zeros elements stored"<<std::endl;
+
+    file.close();
+}
+
+    template<class T, StorageOrder S>
+    void Matrix<T,S>::resize_mat(idx_type row,idx_type col){ // OCCHIO a nnz !!!!!!!!!!
             if(!is_compressed()){
 
                 if(row < m_nrows or col < m_ncol){
                     auto it = m_dyn_data.begin();
                     while( it != m_dyn_data.end() ) {
                         if(it->first[0]>=row or it->first[1]>=col)
-                            m_dyn_data.erase(it);
+                            it = m_dyn_data.erase(it);
                         else
                             ++it;
                     }
@@ -28,7 +65,7 @@ namespace algebra{
 
 // add a new element in position (i,j)
     template<class T, StorageOrder S>
-    T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j){
+    T& Matrix<T,S>::operator ()(idx_type i, idx_type j){
         std::cout<<"non const method"<<std::endl;
         
         if( is_compressed() ){
@@ -66,7 +103,7 @@ namespace algebra{
 
     // read the element in position (i,j)
     template<class T, StorageOrder S>
-    T& Matrix<T,S>::operator ()(std::size_t i, std::size_t j)const {
+    T& Matrix<T,S>::operator ()(idx_type i, idx_type j)const {
         std::cout<<"const method"<<std::endl;
         assert(is_in_range(i,j));
 
@@ -108,19 +145,12 @@ void Matrix<T,S>::compress(){
     idx_type iter = 0; // iterate all non zero elements (from 0 to m_nnz)
     idx_type idx = 0; // index of the row/col (from 0 to m_nrows/n_cols)
     for(const auto& p : m_dyn_data){
-
         m_compr_data.values[iter] = p.second;
-        idx_type in;
-        idx_type out;
-        if constexpr(S == StorageOrder::row_wise){// in row_wise ordered:
-            in = p.first[0];
-            out = p.first[1];
-        }
-        else{ // column_wise ordered
-            in = p.first[1];
-            out = p.first[0]; 
-        }
+        idx_type in = p.first[0];
+        idx_type out = p.first[1];
 
+        m_compr_data.adjust_idx(in,out); // in column_wise ordered invert the indexes
+        
         m_compr_data.outer_idx[iter] = out;
         if( in >= idx ) // when in reaches idx value it means we have reached a new row (row_ordered)
             for ( idx_type k = idx ; k <= in ; ++k){// deal with the case one row is made of all zero elements
@@ -144,7 +174,7 @@ void Matrix<T,S>::uncompress(){
     // clear the dynamic container
     m_dyn_data.clear();
 
-    size_t iter = 0;
+    idx_type iter = 0;
     
     for (idx_type r = 0 ; r < m_compr_data.inner_idx.size()-1; ++r)
         for(idx_type i = m_compr_data.inner_idx[r]; i < m_compr_data.inner_idx[r+1] ; ++i){
@@ -211,14 +241,31 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
             //check compatible sizes
             if(M.m_ncol == v.size()){
-                std::vector<U> b(M.m_nrows,0);
+
+                std::vector<U> res(M.m_nrows,0); // result vector
 
                 if(M.is_compressed()){
+                    idx_type iter = 0;
+                    if constexpr(O == StorageOrder::row_wise)
+                        for (idx_type r = 0 ; r < M.m_compr_data.inner_idx.size()-1; ++r)
+                            for(idx_type i = M.m_compr_data.inner_idx[r]; i < M.m_compr_data.inner_idx[r+1] ; ++i, ++iter)
+                                res[r] += M.m_compr_data.values[iter] * v[M.m_compr_data.outer_idx[iter]];
+                                // no v[outer[iter]]
+                               // m_dyn_data[{r,m_compr_data.outer_idx[iter]}] = m_compr_data.values[iter];
+                                //++iter;
+                    
+                    else
+                        // for (idx_type j = 0 ; j < M.m_ncol; ++j)
+                            for (idx_type c = 0 ; c < M.m_compr_data.inner_idx.size()-1; ++c)
+                                for(idx_type i = M.m_compr_data.inner_idx[c]; i < M.m_compr_data.inner_idx[c+1] ; ++i, ++iter)
+                                    res[M.m_compr_data.outer_idx[iter]] += M.m_compr_data.values[iter] * v[c];
 
                 }
-                else{ // dynamic storage
+                else // dynamic storage
+                    for(const auto& m : M.m_dyn_data)
+                        res[m.first[0]] += m.second*v[m.first[1]];
 
-                }
+                return res;
             }
             
             // wrong size
