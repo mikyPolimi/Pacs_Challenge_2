@@ -51,12 +51,48 @@ if(res3==res4)
 
 
 };
+
+void test_norm(){
+    using namespace algebra;
+    using T = double;
+
+    Matrix<T,StorageOrder::row_wise> M (4,5);
+    M(0, 2) = 3;
+    M(0, 4) = 4;
+    M(1, 2) = 5;
+    M(1, 3) = 7;
+    M(3, 1) = 2;
+    M(3, 2) = 6;
+    M(3, 2) = 8;
+    std::cout << "Stream operator:" << std::endl;
+    std::cout << M;
+    std::cout << std::endl;
+    std::cout<<"norm1 dynamic row : "<<M.template norm<norm_type::One>()<<std::endl;
+    M.compress();
+    std::cout<<"norm1 compress row : "<<M.template norm<norm_type::One>()<<std::endl;
+
+    Matrix<T,StorageOrder::column_wise> M2 (4,5);
+    M2(0, 2) = 3;
+    M2(0, 4) = 4;
+    M2(1, 2) = 5;
+    M2(1, 3) = 7;
+    M2(3, 1) = 2;
+    M2(3, 2) = 6;
+    M2(3, 2) = 8;
+    std::cout<<"norm1 dynamic col : "<<M2.template norm<norm_type::One>()<<std::endl;
+    M2.compress();
+    std::cout<<"norm1 compress col : "<<M2.template norm<norm_type::One>()<<std::endl;
+
+};
+
+
 int main(){
 
-   test_mat_vec_prod();
-   using namespace algebra;
+    //test_mat_vec_prod();
+    test_norm();
+    using namespace algebra;
     using namespace Timings;
-
+/*
     //using T = std::complex<double>;
     using T = double;
     Matrix<T,StorageOrder::row_wise> A("lnsp_131.mtx");
@@ -85,12 +121,11 @@ int main(){
     //M.resize(3,3);
 
     M.compress();
-     std::cout << M;
+    std::cout << M;
     std::cout << std::endl;
-M.uncompress();
- std::cout<<"after decompression: "<<std::endl;
+    M.uncompress();
+    std::cout<<"after decompression: "<<std::endl;
     std::cout<<M<<std::endl;
-
     std::vector<T> v{1,1,1,1,2};
     std::vector<T> res = M*v;
 

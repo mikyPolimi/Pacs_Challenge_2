@@ -69,7 +69,7 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
     T& Matrix<T,S>::operator ()(idx_type i, idx_type j){
        
         if( is_compressed() ){
-            
+
             if(is_in_range(i,j)){            
             m_compr_data.adjust_idx(i,j);
             for(idx_type k = m_compr_data.inner_idx[i] ; k < m_compr_data.inner_idx[i+1] ; ++k)
@@ -259,15 +259,49 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
         }
 /*
         // Extend the matrix vector operator to accept also as vector a Matrix with just one column
-        template <class U, StorageOrder O>
-        std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v){
-            assert ( v.m_ncol==1 and v.m_nrows == M.m_ncol);
-                // copy the matrix inside a vector 
+        template <class U, StorageOrder O1,StorageOrder O2>
+        Matrix<U,StorageOrder::row_wise> operator* (const Matrix<U,O1> & M1,const Matrix<U,O2> & M2){
+            assert ( v.m_nrows == M.m_ncol);
+            Matrix<U,StorageOrder::row_wise> result(M1.m_nrows,M2.m_ncol);
+
+            if (M2.m_ncol==1 )
+                // copy the matrix inside a vector
+
+            return result;
 
 //! TODO
-        }
-        */
+        } */
+        
 
+        template <class T, StorageOrder S>
+        template <norm_type Norm>
+        double Matrix<T,S>::norm() const{
+            if constexpr (Norm == norm_type::One){
+
+                std::vector<double> col_sum(m_ncol);
+
+                if (!is_compressed()){
+                    for (const auto& m : m_dyn_data)  
+                                col_sum[m.first[1]] += std::abs(m.second);
+                         
+                }
+                else{ // compressed storage
+
+                    if constexpr(S==StorageOrder::row_wise)
+                        for(idx_type iter = 0; iter < m_nnz ; ++iter)
+                            col_sum[m_compr_data.outer_idx[iter]] += m_compr_data.values[iter];
+                
+                    else // column
+                        for (idx_type c = 0 ; c < m_compr_data.inner_idx.size()-1; ++c)
+                                for(idx_type i = m_compr_data.inner_idx[c]; i < m_compr_data.inner_idx[c+1] ; ++i) 
+                                    col_sum[c] += m_compr_data.values[i];
+                
+                }               
+
+                return *max_element(col_sum.cbegin(), col_sum.cend());
+            }
+            return 0;
+        }
 };
 
 

@@ -12,6 +12,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cmath>
+
 
 namespace algebra{
 
@@ -20,6 +22,14 @@ namespace algebra{
         row_wise,
         column_wise
     };
+
+    enum class norm_type
+    {
+        One,
+        Infinity,
+        Frobenius,
+    };
+
 
     using position = std::array<std::size_t,2>;
 
@@ -144,12 +154,13 @@ namespace algebra{
         // performing Av = b
         template <class U, StorageOrder O>
         friend std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v);
-/*
-        //Extend the matrix vector operator to accept also as vector a Matrix with just one column.
-        template <class U, StorageOrder O>
-        friend std::vector<U> operator* (const Matrix<U,O> & M,const Matrix<U,O> & v);
-*/
 
+        //Extend the matrix vector operator to accept also as vector a Matrix with just one column.
+        ///template <class U, StorageOrder O1,StorageOrder O2>
+        //friend Matrix<U,StorageOrder::row_wise> operator* (const Matrix<U,O1> & M,const Matrix<U,O2> & v);
+
+        template <norm_type Norm>
+        double norm() const;
     };
 
 
