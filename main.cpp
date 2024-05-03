@@ -80,14 +80,14 @@ void test_norm(){
     Matrix<T,StorageOrder::row_wise> C("lnsp_131.mtx");
     Matrix<T,StorageOrder::column_wise> D("lnsp_131.mtx");
 
-    std::cout<<"norm inf dynamic row : "<<C.norm<norm_type::Infinity>()<<std::endl;
+    std::cout<<"norm inf dynamic row : "<<A.norm<norm_type::Infinity>()<<std::endl;
     A.compress();
     //std::cout<<A<<std::endl;
-    std::cout<<"norm inf compress row : "<<C.norm<norm_type::Infinity>()<<std::endl;
+    std::cout<<"norm inf compress row : "<<A.norm<norm_type::Infinity>()<<std::endl;
 
-    std::cout<<"norm inf dynamic col : "<<D.norm<norm_type::Infinity>()<<std::endl;
+    std::cout<<"norm inf dynamic col : "<<B.norm<norm_type::Infinity>()<<std::endl;
     B.compress();
-    std::cout<<"norm inf compress col : "<<D.norm<norm_type::Infinity>()<<std::endl;
+    std::cout<<"norm inf compress col : "<<B.norm<norm_type::Infinity>()<<std::endl;
 
     std::cout<<std::endl;
 
@@ -142,8 +142,8 @@ void test_norm(){
 
 int main(){
 
-    //test_mat_vec_prod();
-    test_norm();
+    test_mat_vec_prod();
+    //test_norm();
     using namespace algebra;
     using namespace Timings;
 /*
@@ -161,7 +161,7 @@ int main(){
     std::cout<<A<<std::endl;
 
 
-    Matrix<T,StorageOrder::row_wise> M (4,5);
+    Matrix<T,StorageOrder::column_wise> M (4,5);
     M(0, 2) = 3;
     M(0, 4) = 4;
     M(1, 2) = 5;

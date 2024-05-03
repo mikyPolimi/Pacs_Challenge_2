@@ -153,23 +153,59 @@ void Matrix<T,S>::compress(){
         ++iter;
     }
     m_compr_data.inner_idx[inner_len-1] = m_nnz;
+     m_dyn_data.clear();
+    m_is_compr = true;
+}
+
+
+    /*
+   idx_type iter = 0;
+   idx_type inner_nnz = 0;
+   m_compr_data.inner_idx[0] = 0;
+   m_compr_data.inner_idx[inner_len-1] = m_nnz;
+   for(const auto& p : m_dyn_data){
+
+        m_compr_data.values[iter] = p.second;
+        idx_type in = p.first[0];
+        idx_type out = p.first[1];
+        m_compr_data.adjust_idx(in,out); // in column_wise ordered invert the indexes
+        m_compr_data.outer_idx[iter] = out;
+
+        // count how many non zeros encountered in this inner layer (row if row_wise ordered)
+        if(in<inner_nnz)
+            ++inner_nnz;
+        else{
+
+        }
+        ++iter;
+
+   }
 
     m_dyn_data.clear();
     m_is_compr = true;
-}
+}*/
+
 
 
 // method to uncompress the matrix storage
 template<class T, StorageOrder S>
 void Matrix<T,S>::uncompress(){
-
+    if(!is_compressed()){
+        std::cerr << "Matrix already dynamic stored"<<std::endl;
+        return ;
+    }
     // clear the dynamic container
     m_dyn_data.clear();
     
     for (idx_type r = 0 ; r < m_compr_data.inner_idx.size()-1; ++r)
-        for(idx_type i = m_compr_data.inner_idx[r]; i < m_compr_data.inner_idx[r+1] ; ++i)
-            m_dyn_data[{r,m_compr_data.outer_idx[i]}] = m_compr_data.values[i];
-        
+        for(idx_type i = m_compr_data.inner_idx[r]; i < m_compr_data.inner_idx[r+1] ; ++i){
+            if constexpr ( S == StorageOrder::row_wise)
+                m_dyn_data[{r,m_compr_data.outer_idx[i]}] = m_compr_data.values[i];
+            else // column_wise
+                m_dyn_data[{m_compr_data.outer_idx[i],r}] = m_compr_data.values[i];
+
+        }
+    
     m_is_compr = false;
     m_compr_data.clear();
 }
