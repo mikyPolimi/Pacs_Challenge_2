@@ -54,7 +54,61 @@ if(res3==res4)
 
 void test_norm(){
     using namespace algebra;
-    using T = double;
+    using T = std::complex<double>;
+
+
+
+    Matrix<T,StorageOrder::row_wise> A("lnsp_131.mtx");
+    Matrix<T,StorageOrder::column_wise> B("lnsp_131.mtx");
+    //std::cout<<A<<std::endl;
+
+    // 1 norm:
+
+    std::cout<<"norm1 dynamic row : "<<A.norm<norm_type::One>()<<std::endl;
+    A.compress();
+    std::cout<<"norm1 compress row : "<<A.norm<norm_type::One>()<<std::endl;
+
+    std::cout<<"norm1 dynamic col : "<<B.norm<norm_type::One>()<<std::endl;
+    B.compress();
+    std::cout<<"norm1 compress col : "<<B.norm<norm_type::One>()<<std::endl;
+    std::cout<<std::endl;
+
+    // infinity norm:
+
+    A.uncompress();
+    B.uncompress();
+    Matrix<T,StorageOrder::row_wise> C("lnsp_131.mtx");
+    Matrix<T,StorageOrder::column_wise> D("lnsp_131.mtx");
+
+    std::cout<<"norm inf dynamic row : "<<C.norm<norm_type::Infinity>()<<std::endl;
+    A.compress();
+    //std::cout<<A<<std::endl;
+    std::cout<<"norm inf compress row : "<<C.norm<norm_type::Infinity>()<<std::endl;
+
+    std::cout<<"norm inf dynamic col : "<<D.norm<norm_type::Infinity>()<<std::endl;
+    B.compress();
+    std::cout<<"norm inf compress col : "<<D.norm<norm_type::Infinity>()<<std::endl;
+
+    std::cout<<std::endl;
+
+// Froebenius norm:
+    
+    A.uncompress();
+    B.uncompress();
+
+    std::cout<<"norm Froebenius dynamic row : "<<A.norm<norm_type::Frobenius>()<<std::endl;
+    A.compress();
+    //std::cout<<A<<std::endl;
+    std::cout<<"norm Froebenius compress row : "<<A.norm<norm_type::Frobenius>()<<std::endl;
+
+    std::cout<<"norm Froebenius dynamic col : "<<B.norm<norm_type::Frobenius>()<<std::endl;
+    B.compress();
+    std::cout<<"norm Froebenius compress col : "<<B.norm<norm_type::Frobenius>()<<std::endl;
+
+
+
+
+
 
     Matrix<T,StorageOrder::row_wise> M (4,5);
     M(0, 2) = 3;
@@ -67,9 +121,9 @@ void test_norm(){
     std::cout << "Stream operator:" << std::endl;
     std::cout << M;
     std::cout << std::endl;
-    std::cout<<"norm1 dynamic row : "<<M.template norm<norm_type::One>()<<std::endl;
+    std::cout<<"norminf dynamic row : "<<M.template norm<norm_type::Frobenius>()<<std::endl;
     M.compress();
-    std::cout<<"norm1 compress row : "<<M.template norm<norm_type::One>()<<std::endl;
+    std::cout<<"norminf compress row : "<<M.template norm<norm_type::Frobenius>()<<std::endl;
 
     Matrix<T,StorageOrder::column_wise> M2 (4,5);
     M2(0, 2) = 3;
@@ -79,9 +133,9 @@ void test_norm(){
     M2(3, 1) = 2;
     M2(3, 2) = 6;
     M2(3, 2) = 8;
-    std::cout<<"norm1 dynamic col : "<<M2.template norm<norm_type::One>()<<std::endl;
+    std::cout<<"norminf dynamic col : "<<M2.template norm<norm_type::Frobenius>()<<std::endl;
     M2.compress();
-    std::cout<<"norm1 compress col : "<<M2.template norm<norm_type::One>()<<std::endl;
+    std::cout<<"norminf compress col : "<<M2.template norm<norm_type::Frobenius>()<<std::endl;
 
 };
 

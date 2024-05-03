@@ -13,7 +13,7 @@
 #include <sstream>
 #include <string>
 #include <cmath>
-
+#include<math.h>
 
 namespace algebra{
 
@@ -159,7 +159,7 @@ namespace algebra{
         ///template <class U, StorageOrder O1,StorageOrder O2>
         //friend Matrix<U,StorageOrder::row_wise> operator* (const Matrix<U,O1> & M,const Matrix<U,O2> & v);
 
-        template <norm_type Norm>
+        template <norm_type N>
         double norm() const;
     };
 

@@ -274,11 +274,11 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
         
 
         template <class T, StorageOrder S>
-        template <norm_type Norm>
+        template <norm_type N>
         double Matrix<T,S>::norm() const{
-            if constexpr (Norm == norm_type::One){
+            if constexpr (N == norm_type::One){
 
-                std::vector<double> col_sum(m_ncol);
+                std::vector<double> col_sum(m_ncol); // vector for storing the sum of all elements for each column, the function will return its maximum
 
                 if (!is_compressed()){
                     for (const auto& m : m_dyn_data)  
@@ -289,16 +289,52 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
                     if constexpr(S==StorageOrder::row_wise)
                         for(idx_type iter = 0; iter < m_nnz ; ++iter)
-                            col_sum[m_compr_data.outer_idx[iter]] += m_compr_data.values[iter];
+                            col_sum[m_compr_data.outer_idx[iter]] += std::abs(m_compr_data.values[iter]);
                 
                     else // column
                         for (idx_type c = 0 ; c < m_compr_data.inner_idx.size()-1; ++c)
                                 for(idx_type i = m_compr_data.inner_idx[c]; i < m_compr_data.inner_idx[c+1] ; ++i) 
-                                    col_sum[c] += m_compr_data.values[i];
+                                    col_sum[c] += std::abs(m_compr_data.values[i]);
                 
                 }               
 
                 return *max_element(col_sum.cbegin(), col_sum.cend());
+            }
+
+            else if constexpr (N==norm_type::Infinity){
+
+                std::vector<double> row_sum(m_nrows);  // vector for storing the sum of all elements for each row, the function will return its maximum
+
+                if (!is_compressed()){
+                    for (const auto& m : m_dyn_data)  
+                                row_sum[m.first[0]] += std::abs(m.second);
+                         
+                }
+                else{ // compressed storage
+
+                    if constexpr(S==StorageOrder::column_wise)
+                        for(idx_type iter = 0; iter < m_nnz ; ++iter)
+                            row_sum[m_compr_data.outer_idx[iter]] += std::abs(m_compr_data.values[iter]);
+                
+                    else // row_wise ordered
+                        for (idx_type r = 0 ; r < m_compr_data.inner_idx.size()-1; ++r)
+                                for(idx_type i = m_compr_data.inner_idx[r]; i < m_compr_data.inner_idx[r+1] ; ++i) 
+                                    row_sum[r] += std::abs(m_compr_data.values[i]);
+                
+                }               
+
+                return *max_element(row_sum.cbegin(), row_sum.cend());
+            }
+
+            else{ // Froebenius norm
+                double sum = 0;
+                if(is_compressed())
+                    for(const auto& v : m_compr_data.values)
+                        sum += std::abs(v) * std::abs(v);
+                else // dynamic storage
+                    for(const auto& m : m_dyn_data)
+                        sum += std::abs(m.second) * std::abs(m.second);
+                return std::sqrt(sum);
             }
             return 0;
         }
