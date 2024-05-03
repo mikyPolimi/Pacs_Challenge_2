@@ -69,13 +69,10 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
     T& Matrix<T,S>::operator ()(idx_type i, idx_type j){
        
         if( is_compressed() ){
-            if(is_in_range(i,j)){
             
+            if(is_in_range(i,j)){            
             m_compr_data.adjust_idx(i,j);
-            
-            idx_type r = m_compr_data.inner_idx[i];
-            idx_type r_1 = m_compr_data.inner_idx[i+1];
-            for(idx_type k = r ; k < r_1 ; ++k)
+            for(idx_type k = m_compr_data.inner_idx[i] ; k < m_compr_data.inner_idx[i+1] ; ++k)
                 if (m_compr_data.outer_idx[k] == j)
                     return m_compr_data.values[k];
             }
@@ -83,7 +80,6 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
             std::cerr<<"this element does not exist"<<std::endl;
             static T ret;
             return ret;
-
         }
 
         else{ //dynamic storage
@@ -108,14 +104,10 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
 
         if(is_compressed()){ // compressed case
             m_compr_data.adjust_idx(i,j);
-
-            idx_type r = m_compr_data.inner_idx[i];
-            idx_type r_1 = m_compr_data.inner_idx[i+1];
-            for(idx_type k = r ; k < r_1 ; ++k)
+            for(idx_type k = m_compr_data.inner_idx[i] ; k < m_compr_data.inner_idx[i+1] ; ++k)
                 if (m_compr_data.outer_idx[k] == j)
                     return m_compr_data.values[k];
-            }
-
+        }
         else // dynamic storage
             if( m_dyn_data.find({i,j}) !=  m_dyn_data.cend())
                 return m_dyn_data.at({i,j});
@@ -173,15 +165,11 @@ void Matrix<T,S>::uncompress(){
 
     // clear the dynamic container
     m_dyn_data.clear();
-
-    idx_type iter = 0;
     
     for (idx_type r = 0 ; r < m_compr_data.inner_idx.size()-1; ++r)
-        for(idx_type i = m_compr_data.inner_idx[r]; i < m_compr_data.inner_idx[r+1] ; ++i){
-            m_dyn_data[{r,m_compr_data.outer_idx[iter]}] = m_compr_data.values[iter];
-            ++iter;
-        }
-
+        for(idx_type i = m_compr_data.inner_idx[r]; i < m_compr_data.inner_idx[r+1] ; ++i)
+            m_dyn_data[{r,m_compr_data.outer_idx[i]}] = m_compr_data.values[i];
+        
     m_is_compr = false;
     m_compr_data.clear();
 }
@@ -234,8 +222,6 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
 
 
-
-
 // performing Av = b
         template <class U, StorageOrder O>
         std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v){
@@ -245,25 +231,24 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
                 std::vector<U> res(M.m_nrows,0); // result vector
 
-                if(M.is_compressed()){
-                    idx_type iter = 0;
+                if(M.is_compressed()){                    
                     if constexpr(O == StorageOrder::row_wise)
                         for (idx_type r = 0 ; r < M.m_compr_data.inner_idx.size()-1; ++r)
-                            for(idx_type i = M.m_compr_data.inner_idx[r]; i < M.m_compr_data.inner_idx[r+1] ; ++i, ++iter)
-                                res[r] += M.m_compr_data.values[iter] * v[M.m_compr_data.outer_idx[iter]];
-                                
+                            for(idx_type i = M.m_compr_data.inner_idx[r]; i < M.m_compr_data.inner_idx[r+1] ; ++i)                       
+                                res[r] += M.m_compr_data.values[i] * v[M.m_compr_data.outer_idx[i]];
+
                                // m_dyn_data[{r,m_compr_data.outer_idx[iter]}] = m_compr_data.values[iter];
                                                    
                     else
                         for (idx_type c = 0 ; c < M.m_compr_data.inner_idx.size()-1; ++c)
-                            for(idx_type i = M.m_compr_data.inner_idx[c]; i < M.m_compr_data.inner_idx[c+1] ; ++i, ++iter)
-                                res[M.m_compr_data.outer_idx[iter]] += M.m_compr_data.values[iter] * v[c];
+                            for(idx_type i = M.m_compr_data.inner_idx[c]; i < M.m_compr_data.inner_idx[c+1] ; ++i)
+                                res[M.m_compr_data.outer_idx[i]] += M.m_compr_data.values[i] * v[c];
 
                 }
-                else // dynamic storage
+                else{ // dynamic storage
                     for(const auto& m : M.m_dyn_data)
                         res[m.first[0]] += m.second*v[m.first[1]];
-
+                }
                 return res;
             }
             

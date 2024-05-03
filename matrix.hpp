@@ -122,7 +122,7 @@ namespace algebra{
         inline idx_type get_ncol(){
             return m_ncol;
         }
-        // resize method
+
         void resize(idx_type row,idx_type col);
         // call operators:
 

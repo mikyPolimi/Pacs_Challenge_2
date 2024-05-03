@@ -50,6 +50,8 @@
         "iomanip": "cpp",
         "sstream": "cpp",
         "complex": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp"
     }
 }
