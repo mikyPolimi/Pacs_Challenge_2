@@ -1,6 +1,8 @@
 # Pacs_Challenge_2
 Repository for the PACS second challenge
-This project is a part of the Advanced Programming for Scientific Computing course at Politecnico di Milano. 
+This project is a part of the Advanced Programming for Scientific Computing course at Politecnico di Milano.
+
+# Introduction
 The goal of the project is to develop a library that deals with sparse matrix;
 a matrix whose number of non-zero elements grows as N, being N the linear size
 of the matrix (for instance the square root of the product of the number of rows times
@@ -54,13 +56,15 @@ that may be:
 
 A constructor of the matrix, given as input the name of the file downloaded from *math.nist.gov/MatrixMarket/*
 
-# main
+# Implementation
 
 In order to test the code, in the main function I executed 2 tests:
 `test_mat_vec_prod()` execute the operator Matrix * vector and prints the execution time of the operations performed with all possible storage methods.
 `test_norm()` calculate the one-norm, infinity-norm and Froebenius-norm with all possible storage methods.
 
-Note that the implemantation works fine with all possible type of classes as value of the map. Also std::complex<double> might be used.
+In the make file Optimization has been activated, using the -03 flag.
+
+Note that the implemantation works fine with all possible type of classes as value of the map. Also complex numbers might be used.
 
 ## How to use
 
