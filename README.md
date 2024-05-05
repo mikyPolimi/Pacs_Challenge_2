@@ -54,6 +54,13 @@ that may be:
 
 A constructor of the matrix, given as input the name of the file downloaded from *math.nist.gov/MatrixMarket/*
 
+# main
+
+In order to test the code, in the main function I executed 2 tests:
+`test_mat_vec_prod()` execute the operator Matrix * vector and prints the execution time of the operations performed with all possible storage methods.
+`test_norm()` calculate the one-norm, infinity-norm and Froebenius-norm with all possible storage methods.
+
+Note that the implemantation works fine with all possible type of classes as value of the map. Also std::complex<double> might be used.
 
 ## How to use
 
