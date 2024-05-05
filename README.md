@@ -1,72 +1,60 @@
-# Pacs_Challenge_2
-Repository for the PACS second challenge
-This project is a part of the Advanced Programming for Scientific Computing course at Politecnico di Milano.
 
-# Introduction
-The goal of the project is to develop a library that deals with sparse matrix;
-a matrix whose number of non-zero elements grows as N, being N the linear size
-of the matrix (for instance the square root of the product of the number of rows times
-the number of columns).
+# PACS_Challenge_2
 
-The way to store a sparse matrix is not unique, and we can distinguish between two
-families of storage techniques:
+This repository contains the second challenge of the course "Advanced Programming for Scientific Computing" at Politecnico di Milano.
 
-**Dynamic** (or uncompressed) storage techniques. They allow to add (and sometimes
-also eliminate) new non-zero elements easily. 
+## Introduction
 
-**Compressed** storage techniques. They are the most efficient in terms of memory
-and of the computational efficiency of basic operations like matrix-vector product. But
-they do not allow to change the pattern of sparsity.
+The goal of this project is to develop a library that deals with sparse matrices. Sparse matrices are matrices with a significant number of zero elements compared to non-zero elements. They find applications in various scientific and engineering fields where memory and computational efficiency are crucial.
 
-In this project I developed as dynamic stored:
+In this project, we explore different storage techniques for sparse matrices, including dynamic (uncompressed) and compressed storage methods. Dynamic techniques allow for easy addition or deletion of non-zero elements, while compressed techniques offer superior memory and computational efficiency for basic operations like matrix-vector product.
 
-`COOmap`: where the map (i, j) → Aij is performed with a std::map where the couple i, j acts as the key. Different orderings may
-be used so that the elements are logically ordered column-wise or row-wise. In other
-words, with the appropriate ordering traversing the map provides the matrix elements
-”by row” or ”by column”.
+We have implemented the following storage techniques:
+
+- **COOmap**: Dynamic storage using a map (i, j) → Aij, where the pair (i, j) acts as the key. Different orderings may be used for logical ordering column-wise or row-wise.
+
+- **CSR (Compressed Sparse Row)**: Efficient compressed storage where two index vectors are used to store row-wise data.
+
+- **CSC (Compressed Sparse Column)**: Similar to CSR but stores data column-wise.
+
+## Most Useful Available Methods
+
+- `compress()` and `uncompress()`: Methods to switch the internal storage of the matrix.
+
+- `operator ()`: Both const and non-const versions to access elements of the matrix.
+
+- `operator *`: Overloaded for multiplication of matrices.
+
+- `norm()`: Template method to calculate various norms such as One-norm, Infinity-norm, or Frobenius-norm.
+
+- Constructor: Initializes the matrix using a file downloaded from *math.nist.gov/MatrixMarket/*.
+
+## Implementation
+
+Inside the `algebra` namespace:
+- The template `Storage order S`, given by an enumerator.
+- `Matrix`: A template class that represents the sparse matrix. Its input parameters are:
+  - `T`: A class (e.g., double or std::complex).
+  - `S`: An enumerator representing the order in which the matrix is traversed and stored: row-wise or column-wise.
+
+Inside the `Matrix` class as private members:
+- `dynamic_container<T,S> m_dyn_data`: Defined by a map: (i,j) -> elem.
+- `Compressed_struct<T,S> m_compr_data`: A struct formed by 3 vectors, as explained before. It also has a useful method `adjust_idx(idx_type& in, idx_type& out)` which swaps the indexes in case the matrix is stored in column-wise order.
+
+**Note:** The map used in `dynamic_container` is constructed through a custom comparator. This comparator is designed to overwrite the `<` operator in case the matrix is stored in column-wise order, ensuring correct ordering and efficient access to elements.
 
 
-As compressed stored:
+To test the code, two tests are executed in the `main` function:
 
-`CSR`: Compressed Sparse Row. We store two vectors of indexes. The first (the inner indexes),
-of length the number of rows plus one, contains the starting index for the elements of
-each row. The second vector of indexes (the outer indexes), of length the number of nonzeroes,
-contains the corresponding column index. Finally, we have a vector of values,
-again of length the number of non-zeroes. To be more specific, the elements of row i are
-stored in the elements of the vector of values in the interval inner(i) ≤ k < inner(i + 1)
-(the interval is open on the right) and the corresponding column index is outer(k).
-Using this scheme, we have a row-wise storage, since transversing the vector of values
-provides the non-zero elements ”by row”.
+1. `test_mat_vec_prod()`: Performs matrix-vector product and prints the execution time of the operations using all possible storage methods.
 
-`CSC`: Compressed Sparse Column. As before, but with the role of row and column exchanged.
-The matrix is thus stored column-wise.
+2. `test_norm()`: Calculates the one-norm, infinity-norm, and Frobenius-norm with all possible storage methods.
 
-# Avaiable methods
-`compress()` and `uncompress()` able to switch the internal storage of the matrix
+The make file has optimization activated using the -O3 flag.
 
-`is_compressed()`
+Note: The implementation works fine with all possible types of classes as values of the map. Complex numbers can also be used.
 
-Call operator `()`, both const and non const version
-
-A friend `operator *` for the multiplication of the matrix
-
-A template method `norm()` that takes as template value an enumerator
-that may be:
-`One`, `Infinity` or `Frobenius`.
-
-A constructor of the matrix, given as input the name of the file downloaded from *math.nist.gov/MatrixMarket/*
-
-# Implementation
-
-In order to test the code, in the main function I executed 2 tests:
-`test_mat_vec_prod()` execute the operator Matrix * vector and prints the execution time of the operations performed with all possible storage methods.
-`test_norm()` calculate the one-norm, infinity-norm and Froebenius-norm with all possible storage methods.
-
-In the make file Optimization has been activated, using the -03 flag.
-
-Note that the implemantation works fine with all possible type of classes as value of the map. Also complex numbers might be used.
-
-## How to use
+### How to Use
 
 To use this project, follow these steps:
 
