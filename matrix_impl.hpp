@@ -99,7 +99,7 @@ void Matrix<T,S>::readMatrixMarket(const std::string& filename) {
 
     // read the element in position (i,j)
     template<class T, StorageOrder S>
-    T& Matrix<T,S>::operator ()(idx_type i, idx_type j)const {
+    T Matrix<T,S>::operator ()(idx_type i, idx_type j)const {
         assert(is_in_range(i,j));
 
         if(is_compressed()){ // compressed case
@@ -156,34 +156,6 @@ void Matrix<T,S>::compress(){
      m_dyn_data.clear();
     m_is_compr = true;
 }
-
-
-    /*
-   idx_type iter = 0;
-   idx_type inner_nnz = 0;
-   m_compr_data.inner_idx[0] = 0;
-   m_compr_data.inner_idx[inner_len-1] = m_nnz;
-   for(const auto& p : m_dyn_data){
-
-        m_compr_data.values[iter] = p.second;
-        idx_type in = p.first[0];
-        idx_type out = p.first[1];
-        m_compr_data.adjust_idx(in,out); // in column_wise ordered invert the indexes
-        m_compr_data.outer_idx[iter] = out;
-
-        // count how many non zeros encountered in this inner layer (row if row_wise ordered)
-        if(in<inner_nnz)
-            ++inner_nnz;
-        else{
-
-        }
-        ++iter;
-
-   }
-
-    m_dyn_data.clear();
-    m_is_compr = true;
-}*/
 
 
 
@@ -260,7 +232,7 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
 
 // performing Av = b
         template <class U, StorageOrder O>
-        std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v){
+        std::vector<U> operator* (const Matrix<U,O>& M, const std::vector<U>& v){
 
             //check compatible sizes
             if(M.m_ncol == v.size()){
@@ -270,8 +242,8 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
                 if(M.is_compressed()){                    
                     if constexpr(O == StorageOrder::row_wise)
                         for (idx_type r = 0 ; r < M.m_compr_data.inner_idx.size()-1; ++r)
-                            for(idx_type i = M.m_compr_data.inner_idx[r]; i < M.m_compr_data.inner_idx[r+1] ; ++i)                       
-                                res[r] += M.m_compr_data.values[i] * v[M.m_compr_data.outer_idx[i]];
+                            for(idx_type j = M.m_compr_data.inner_idx[r]; j < M.m_compr_data.inner_idx[r+1] ; ++j)                       
+                                res[r] += M.m_compr_data.values[j] * v[M.m_compr_data.outer_idx[j]];
 
                                // m_dyn_data[{r,m_compr_data.outer_idx[iter]}] = m_compr_data.values[iter];
                                                    
@@ -284,6 +256,14 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
                 else{ // dynamic storage
                     for(const auto& m : M.m_dyn_data)
                         res[m.first[0]] += m.second*v[m.first[1]];
+                        
+                      /*for(idx_type i = 0; i < M.get_nrows(); ++i)
+                        for(idx_type j = 0; j < M.get_ncol(); ++j){
+                            if constexpr (O == StorageOrder::row_wise)
+                                res[i] += M(i,j) * v[j];
+                            else 
+                                res[i] += M(j,i) * v[j];
+                        }*/
                 }
                 return res;
             }
@@ -293,20 +273,33 @@ std::ostream& operator<<(std::ostream &stream, Matrix<U,O> &M){
             static std::vector<U> ret;
             return ret;
         }
-/*
+
         // Extend the matrix vector operator to accept also as vector a Matrix with just one column
         template <class U, StorageOrder O1,StorageOrder O2>
         Matrix<U,StorageOrder::row_wise> operator* (const Matrix<U,O1> & M1,const Matrix<U,O2> & M2){
-            assert ( v.m_nrows == M.m_ncol);
+            assert ( M2.m_nrows == M1.m_ncol);
             Matrix<U,StorageOrder::row_wise> result(M1.m_nrows,M2.m_ncol);
 
-            if (M2.m_ncol==1 )
+            if (M2.m_ncol==1 ){
                 // copy the matrix inside a vector
+                std::vector<U> res_vector(M1.m_nrows,0);
 
+                // vector where I copy m2
+                std::vector<U> m2_vector(M2.m_nrows,0);
+
+                for(idx_type i = 0; i< M2.m_nrows; ++i)
+                    m2_vector[i] = M2(i,0);
+
+                // rely on the operator previously defined:
+                res_vector = M1 * m2_vector;
+
+                for(idx_type i = 0; i < M1.m_nrows; ++i)
+                    if ( res_vector[i] != 0)
+                        result(i,0) = res_vector[i];
+            }
             return result;
 
-//! TODO
-        } */
+        } 
         
 
         template <class T, StorageOrder S>

@@ -30,8 +30,8 @@ namespace algebra{
         Frobenius,
     };
 
-
-    using position = std::array<std::size_t,2>;
+    using idx_type = long unsigned int;
+    using position = std::array<idx_type,2>;
 
     template<StorageOrder S>
     struct custom_comparer
@@ -47,7 +47,7 @@ namespace algebra{
     template<class T, StorageOrder S>
     using dynamic_container = std::map<position,T,custom_comparer<S>>;
 
-    using idx_type = long unsigned int;
+    
 
 
 
@@ -67,7 +67,7 @@ namespace algebra{
         }
 
         // switch i and j in colummn_wise order
-        inline void adjust_idx(idx_type& in, idx_type& out){
+        inline void adjust_idx(idx_type& in, idx_type& out)const{
             if constexpr(S==StorageOrder::column_wise)
                 std::swap(in,out);
         }
@@ -126,10 +126,10 @@ namespace algebra{
             readMatrixMarket(filename);
         };
 
-        inline idx_type get_nrows(){
+        inline idx_type get_nrows()const{
             return m_nrows;
         }
-        inline idx_type get_ncol(){
+        inline idx_type get_ncol()const{
             return m_ncol;
         }
 
@@ -137,10 +137,10 @@ namespace algebra{
         // call operators:
 
         // add a new element in position (i,j)
-        T& operator ()(std::size_t i, std::size_t j);
+        T& operator ()(idx_type i, idx_type j);
 
         // read the element in position (i,j)
-        T& operator ()(std::size_t i, std::size_t j)const;
+        T operator ()(idx_type i, idx_type j)const;
 
         // change dynamic/compress storage
         void compress();
@@ -156,8 +156,8 @@ namespace algebra{
         friend std::vector<U> operator* (const Matrix<U,O> &M,const std::vector<U>& v);
 
         //Extend the matrix vector operator to accept also as vector a Matrix with just one column.
-        ///template <class U, StorageOrder O1,StorageOrder O2>
-        //friend Matrix<U,StorageOrder::row_wise> operator* (const Matrix<U,O1> & M,const Matrix<U,O2> & v);
+        template <class U, StorageOrder O1,StorageOrder O2>
+        friend Matrix<U,StorageOrder::row_wise> operator* (const Matrix<U,O1> & M,const Matrix<U,O2> & v);
 
         template <norm_type N>
         double norm() const;

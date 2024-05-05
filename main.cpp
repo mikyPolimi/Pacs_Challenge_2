@@ -11,12 +11,15 @@ void test_mat_vec_prod(){
     Chrono chrono;
 
     Matrix<T,StorageOrder::row_wise> A("lnsp_131.mtx");
-
+    
     // generate vector of size A_num_columns
     std::vector<T> v(A.get_ncol(),1.0);
     v[3] = 5;
     v[16] = 200;
-    std::vector<T> res;
+    v[20] = -98.351;
+
+    std::cout<<"Matrix-Vetor computation:"<<std::endl;
+
     chrono.start();
     std::vector<T> res1 = A*v;
     chrono.stop();
@@ -42,13 +45,26 @@ void test_mat_vec_prod(){
     chrono.stop();
     std::cout<<"Column_wise compressed operation: "<<chrono<<std::endl;
 
-if(res1==res2)
-    std::cout<<"ok_1"<<std::endl;;
-if(res2==res3)
-    std::cout<<"ok_2"<<std::endl;;
-if(res3==res4)
-    std::cout<<"ok_3"<<std::endl;;
+    if(res1==res2)
+        std::cout<<"ok_1"<<std::endl;
+    if(res2==res3)
+        std::cout<<"ok_2"<<std::endl;
+    if(res3==res4)
+        std::cout<<"ok_3"<<std::endl;
 
+    std::cout<<"Matrix-Matrix computation:"<<std::endl;
+
+    Matrix<T,StorageOrder::row_wise> V(A.get_ncol(),1);
+    for(idx_type i = 0; i < v.size(); ++i)
+        if ( v[i] != 0)
+                V(i,0) = v[i];
+    //std::cout<<V<<std::endl;
+
+
+    chrono.start();
+    Matrix<T,StorageOrder::row_wise> res5 = A*V;
+    chrono.stop();
+    std::cout<<"Row_wise dynamic operation: "<<chrono<<std::endl;
 
 };
 
